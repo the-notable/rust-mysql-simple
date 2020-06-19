@@ -23,6 +23,7 @@ use crate::{
     Conn, DriverError, Error, LocalInfileHandler, Opts, Params, QueryResult, Result, Statement,
     Transaction, TxOpts,
 };
+use std::borrow::Cow;
 
 #[derive(Debug)]
 struct InnerPool {
@@ -353,6 +354,32 @@ impl PooledConn {
             .as_mut()
             .unwrap()
             .set_local_infile_handler(handler);
+    }
+}
+
+impl ConnInfo for PooledConn {
+    fn connection_id(&self) -> u32 {
+        self.as_ref().connection_id()
+    }
+
+    fn affected_rows(&self) -> u64 {
+        self.as_ref().affected_rows()
+    }
+
+    fn last_insert_id(&self) -> Option<u64> {
+        self.as_ref().last_insert_id()
+    }
+
+    fn warnings(&self) -> Option<u16> {
+        self.as_ref().warnings()
+    }
+
+    fn info_ref(&self) -> &[u8] {
+        self.as_ref().info_ref()
+    }
+
+    fn info_str(&self) -> Cow<str> {
+        self.as_ref().info_str()
     }
 }
 

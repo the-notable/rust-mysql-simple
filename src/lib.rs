@@ -816,6 +816,8 @@ pub mod prelude {
     #[doc(inline)]
     pub use crate::conn::queryable::{AsStatement, Queryable};
     #[doc(inline)]
+    pub use crate::conn::conn_info::ConnInfo;
+    #[doc(inline)]
     pub use crate::myc::row::convert::FromRow;
     #[doc(inline)]
     pub use crate::myc::row::ColumnIndex;

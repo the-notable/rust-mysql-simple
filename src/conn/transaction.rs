@@ -130,14 +130,18 @@ impl Transaction<'_> {
     pub fn set_local_infile_handler(&mut self, handler: Option<LocalInfileHandler>) {
         self.conn.set_local_infile_handler(handler);
     }
+}
 
-    /// Returns the number of affected rows, reported by the server.
-    pub fn affected_rows(&self) -> u64 {
+impl ConnInfo for Transaction<'_> {
+    fn connection_id(&self) -> u32 {
+        self.conn.connection_id()
+    }
+
+    fn affected_rows(&self) -> u64 {
         self.conn.affected_rows()
     }
 
-    /// Returns the last insert id of the last query, if any.
-    pub fn last_insert_id(&self) -> Option<u64> {
+    fn last_insert_id(&self) -> Option<u64> {
         self.conn
             .0
             .ok_packet
@@ -145,26 +149,15 @@ impl Transaction<'_> {
             .and_then(OkPacket::last_insert_id)
     }
 
-    /// Returns the warnings count, reported by the server.
-    pub fn warnings(&self) -> u16 {
+    fn warnings(&self) -> Option<u16> {
         self.conn.warnings()
     }
 
-    /// [Info], reported by the server.
-    ///
-    /// Will be empty if not defined.
-    ///
-    /// [Info]: http://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
-    pub fn info_ref(&self) -> &[u8] {
+    fn info_ref(&self) -> &[u8] {
         self.conn.info_ref()
     }
 
-    /// [Info], reported by the server.
-    ///
-    /// Will be empty if not defined.
-    ///
-    /// [Info]: http://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
-    pub fn info_str(&self) -> Cow<str> {
+    fn info_str(&self) -> Cow<str> {
         self.conn.info_str()
     }
 }

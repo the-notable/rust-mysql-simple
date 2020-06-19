@@ -4,3 +4,7 @@ tests/rust-mysql-simple-test
 *.racertmp
 Cargo.lock
 .idea
+provision.sh
+Vagrantfile
+.vagrant
+*console.log

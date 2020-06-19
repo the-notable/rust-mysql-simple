@@ -54,6 +54,7 @@ use crate::{
     LocalInfileHandler, Opts, OptsBuilder, Params, QueryResult, Result, SslOpts, Transaction,
     Value::{self, Bytes, NULL},
 };
+use crate::conn::conn_info::ConnInfo;
 
 pub mod local_infile;
 pub mod opts;
@@ -61,6 +62,7 @@ pub mod pool;
 pub mod query;
 pub mod query_result;
 pub mod queryable;
+pub mod conn_info;
 pub mod stmt;
 mod stmt_cache;
 pub mod transaction;
@@ -182,14 +184,12 @@ impl ConnInner {
 #[derive(Debug)]
 pub struct Conn(Box<ConnInner>);
 
-impl Conn {
-    /// Returns connection identifier.
-    pub fn connection_id(&self) -> u32 {
+impl ConnInfo for Conn {
+    fn connection_id(&self) -> u32 {
         self.0.connection_id
     }
 
-    /// Returns number of rows affected by the last query.
-    pub fn affected_rows(&self) -> u64 {
+    fn affected_rows(&self) -> u64 {
         self.0
             .ok_packet
             .as_ref()
@@ -197,32 +197,21 @@ impl Conn {
             .unwrap_or_default()
     }
 
-    /// Returns last insert id of the last query.
-    ///
-    /// Returns zero if there was no last insert id.
-    pub fn last_insert_id(&self) -> u64 {
+    fn last_insert_id(&self) -> Option<u64> {
         self.0
             .ok_packet
             .as_ref()
             .and_then(OkPacket::last_insert_id)
-            .unwrap_or_default()
     }
 
-    /// Returns number of warnings, reported by the server.
-    pub fn warnings(&self) -> u16 {
+    fn warnings(&self) -> Option<u16> {
         self.0
             .ok_packet
             .as_ref()
             .map(OkPacket::warnings)
-            .unwrap_or_default()
     }
 
-    /// [Info], reported by the server.
-    ///
-    /// Will be empty if not defined.
-    ///
-    /// [Info]: http://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
-    pub fn info_ref(&self) -> &[u8] {
+    fn info_ref(&self) -> &[u8] {
         self.0
             .ok_packet
             .as_ref()
@@ -230,18 +219,16 @@ impl Conn {
             .unwrap_or_default()
     }
 
-    /// [Info], reported by the server.
-    ///
-    /// Will be empty if not defined.
-    ///
-    /// [Info]: http://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
-    pub fn info_str(&self) -> Cow<str> {
+    fn info_str(&self) -> Cow<str> {
         self.0
             .ok_packet
             .as_ref()
             .and_then(OkPacket::info_str)
             .unwrap_or_default()
     }
+}
+
+impl Conn {
 
     fn stream_ref(&self) -> &MySyncFramed<Stream> {
         self.0.stream.as_ref().expect("incomplete connection")
