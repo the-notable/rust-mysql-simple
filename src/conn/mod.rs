@@ -1282,22 +1282,22 @@ mod test {
 
             conn.query_drop(CREATE_QUERY).unwrap();
             assert_eq!(conn.affected_rows(), 0);
-            assert_eq!(conn.last_insert_id(), 0);
+            assert_eq!(conn.last_insert_id().unwrap(), 0);
 
             conn.query_drop(INSERT_QUERY_1).unwrap();
             assert_eq!(conn.affected_rows(), 1);
-            assert_eq!(conn.last_insert_id(), 1);
+            assert_eq!(conn.last_insert_id().unwrap(), 1);
 
             conn.query_drop(INSERT_QUERY_2).unwrap();
             assert_eq!(conn.affected_rows(), 1);
-            assert_eq!(conn.last_insert_id(), 2);
+            assert_eq!(conn.last_insert_id().unwrap(), 2);
 
             conn.query_drop("SELECT * FROM unexisted").unwrap_err();
             conn.query_iter("SELECT * FROM mysql.tbl").unwrap(); // Drop::drop for QueryResult
 
             conn.query_drop("UPDATE mysql.tbl SET a = 'foo'").unwrap();
             assert_eq!(conn.affected_rows(), 2);
-            assert_eq!(conn.last_insert_id(), 0);
+            assert_eq!(conn.last_insert_id().unwrap(), 0);
 
             assert!(conn
                 .query_first::<TestRow, _>("SELECT * FROM mysql.tbl WHERE a = 'bar'")
